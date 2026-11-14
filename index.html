@@ -228,7 +228,7 @@
           const peaks = 2 + (Math.random() * 3 | 0);
           for (let p = 0; p < peaks; p++) {
             const h = 12 + Math.random() * 18, r = 7 + Math.random() * 8;
-            const peak = new THREE.Mesh(new THREE.ConeGeometry(r, h, 6), M(new THREE.Color(baseCol).offsetHSL(0,0,(Math.random()-.5)*0.1)));
+            const peak = new THREE.Mesh(new THREE.ConeGeometry(r*1.5, h*0.7, 6), M(new THREE.Color(baseCol).offsetHSL(0,0,(Math.random()-.5)*0.1)));
             peak.position.set((p - peaks/2) * 8, h/2, (Math.random()-.5)*7); peak.rotation.y = Math.random()*3.14; g.add(peak);
             if (h > 18) { const s = new THREE.Mesh(new THREE.ConeGeometry(r*0.32, h*0.28, 6), M(0xF5F5F5)); s.position.set(peak.position.x, h*0.87, peak.position.z); g.add(s); }
           }
@@ -370,55 +370,57 @@
       const tail=new THREE.Mesh(new THREE.CapsuleGeometry(0.05,0.28,4,8),bm); tail.position.set(0,0.6,-0.62); tail.rotation.x=-1; d.add(tail);
       d.userData={legs,tail,head:hd}; return d; }
       
-    function makeDeer(){ 
-      const d=new THREE.Group(); const c=0xA9744F;
-      const b=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),M(c)); 
-      b.scale.set(1,0.85,1.4); b.position.y=0.7; b.castShadow=true; d.add(b);
-      const hd=new THREE.Group(); hd.position.set(0,1.0,0.55); d.add(hd);
-      const neck=new THREE.Mesh(new THREE.CapsuleGeometry(0.08,0.3,5,8),M(c)); 
-      neck.position.set(0,-0.1,-0.1); neck.rotation.x=-0.3; hd.add(neck);
-      const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),M(c)); 
-      hdm.scale.set(1,1,1.3); hdm.position.set(0,0.08,0.08); hd.add(hdm);
-      hd.add(eye(-0.07,0.1,0.18,0.025),eye(0.07,0.1,0.18,0.025));
-      for(const s of[-1,1]){ 
-        const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.025,0.35,5),M(0xC9B8A6)); 
-        trunk.position.set(s*0.07,0.22,0.03); trunk.rotation.z=s*0.2; hd.add(trunk);
-        for(let k=0;k<2;k++){ 
-          const br=new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.18,5),M(0xC9B8A6)); 
-          br.position.set(s*(0.1+k*0.06),0.28+k*0.03,0.03); br.rotation.z=s*0.7; hd.add(br); 
-        } 
-      }
-      const legs=[]; 
-      [[-0.12,0.52,0.35],[0.12,0.52,0.35],[-0.12,0.52,-0.35],[0.12,0.52,-0.35]].forEach(p=>{ 
-        const l=limb(p[0],p[1],p[2],0.35,0.09,c); d.add(l); legs.push(l); 
-      });
-      d.userData={legs,head:hd}; return d; 
-    }
-    
-    function makeCamel(){ 
-      const c=new THREE.Group(); const col=0xD4A76A;
-      const b=new THREE.Mesh(new THREE.SphereGeometry(0.28,12,10),M(col)); 
-      b.scale.set(1,0.85,1.5); b.position.y=1.0; b.castShadow=true; c.add(b);
-      const h1=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8),M(col)); 
-      h1.position.set(0,1.35,0.35); c.add(h1);
-      const h2=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,8),M(col)); 
-      h2.position.set(0,1.3,-0.35); c.add(h2);
-      const hd=new THREE.Group(); hd.position.set(0,1.6,0.85); c.add(hd);
-      const neck=new THREE.Mesh(new THREE.CapsuleGeometry(0.1,0.4,5,8),M(col)); 
-      neck.position.set(0,-0.15,-0.08); neck.rotation.x=-0.35; hd.add(neck);
-      const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),M(col)); 
-      hdm.scale.set(1,1,1.4); hdm.position.set(0,0.08,0.12); hd.add(hdm);
-      hd.add(eye(-0.07,0.1,0.22,0.025),eye(0.07,0.1,0.22,0.025));
-      for(const s of[-1,1]){ 
-        const e=new THREE.Mesh(new THREE.SphereGeometry(0.04,6,6),M(col)); 
-        e.position.set(s*0.09,0.14,0.03); hd.add(e); 
-      }
-      const legs=[]; 
-      [[-0.18,0.8,0.45],[0.18,0.8,0.45],[-0.18,0.8,-0.45],[0.18,0.8,-0.45]].forEach(p=>{ 
-        const l=limb(p[0],p[1],p[2],0.6,0.08,col); c.add(l); legs.push(l); 
-      });
-      c.userData={legs,head:hd}; return c; 
-    }
+   // Олень — ещё меньше тело, ноги короче и толще
+function makeDeer(){ 
+  const d=new THREE.Group(); const c=0xA9744F;
+  const b=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,10),M(c)); 
+  b.scale.set(1,0.9,1.3); b.position.y=0.55; b.castShadow=true; d.add(b);
+  const hd=new THREE.Group(); hd.position.set(0,0.85,0.45); d.add(hd);
+  const neck=new THREE.Mesh(new THREE.CapsuleGeometry(0.06,0.25,5,8),M(c)); 
+  neck.position.set(0,-0.08,-0.08); neck.rotation.x=-0.25; hd.add(neck);
+  const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8),M(c)); 
+  hdm.scale.set(1,1,1.2); hdm.position.set(0,0.06,0.06); hd.add(hdm);
+  hd.add(eye(-0.06,0.08,0.15,0.02),eye(0.06,0.08,0.15,0.02));
+  for(const s of[-1,1]){ 
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.022,0.28,5),M(0xC9B8A6)); 
+    trunk.position.set(s*0.06,0.18,0.02); trunk.rotation.z=s*0.15; hd.add(trunk);
+    for(let k=0;k<2;k++){ 
+      const br=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.14,5),M(0xC9B8A6)); 
+      br.position.set(s*(0.08+k*0.05),0.22+k*0.02,0.02); br.rotation.z=s*0.6; hd.add(br); 
+    } 
+  }
+  const legs=[]; 
+  [[-0.1,0.42,0.28],[0.1,0.42,0.28],[-0.1,0.42,-0.28],[0.1,0.42,-0.28]].forEach(p=>{ 
+    const l=limb(p[0],p[1],p[2],0.25,0.1,c); d.add(l); legs.push(l); 
+  });
+  d.userData={legs,head:hd}; return d; 
+}
+
+// Верблюд — аналогично
+function makeCamel(){ 
+  const c=new THREE.Group(); const col=0xD4A76A;
+  const b=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),M(col)); 
+  b.scale.set(1,0.9,1.4); b.position.y=0.85; b.castShadow=true; c.add(b);
+  const h1=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,8),M(col)); 
+  h1.position.set(0,1.15,0.3); c.add(h1);
+  const h2=new THREE.Mesh(new THREE.SphereGeometry(0.15,10,8),M(col)); 
+  h2.position.set(0,1.1,-0.3); c.add(h2);
+  const hd=new THREE.Group(); hd.position.set(0,1.35,0.7); c.add(hd);
+  const neck=new THREE.Mesh(new THREE.CapsuleGeometry(0.08,0.35,5,8),M(col)); 
+  neck.position.set(0,-0.12,-0.06); neck.rotation.x=-0.3; hd.add(neck);
+  const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8),M(col)); 
+  hdm.scale.set(1,1,1.3); hdm.position.set(0,0.06,0.1); hd.add(hdm);
+  hd.add(eye(-0.06,0.08,0.18,0.02),eye(0.06,0.08,0.18,0.02));
+  for(const s of[-1,1]){ 
+    const e=new THREE.Mesh(new THREE.SphereGeometry(0.035,6,6),M(col)); 
+    e.position.set(s*0.08,0.12,0.02); hd.add(e); 
+  }
+  const legs=[]; 
+  [[-0.15,0.65,0.38],[0.15,0.65,0.38],[-0.15,0.65,-0.38],[0.15,0.65,-0.38]].forEach(p=>{ 
+    const l=limb(p[0],p[1],p[2],0.45,0.09,col); c.add(l); legs.push(l); 
+  });
+  c.userData={legs,head:hd}; return c; 
+}
 
     function makeSeal(){ const s=new THREE.Group(); const c=0x9FB0BC;
       const b=new THREE.Mesh(new THREE.SphereGeometry(0.42,12,10),M(c)); b.scale.set(1.6,0.8,0.9); b.position.y=0.4; b.castShadow=true; s.add(b);
