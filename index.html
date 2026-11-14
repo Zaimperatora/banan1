@@ -2,895 +2,542 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Симулятор Камня</title>
   <style>
-    body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-    
-    #loginForm {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(44, 62, 80, 0.9); padding: 40px; border-radius: 16px;
-      color: white; z-index: 100; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      backdrop-filter: blur(10px);
-    }
-    #loginForm input {
-      padding: 12px; font-size: 16px; border-radius: 8px;
-      border: 1px solid #555; margin: 15px 10px 0 0; width: 200px;
-    }
-    #loginForm button {
-      padding: 12px 24px; font-size: 16px; background: #27ae60;
-      color: white; border: none; border-radius: 8px; cursor: pointer;
-      margin: 5px;
-    }
+    body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
+    #loginForm { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(44,62,80,0.9); padding: 40px; border-radius: 16px; color: white; z-index: 100; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
+    #loginForm input { padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #555; margin: 15px 10px 0 0; width: 200px; background: rgba(255,255,255,0.1); color: white; }
+    #loginForm button { padding: 12px 24px; font-size: 16px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 5px; }
     #loginForm button:hover { background: #2ecc71; }
-    #leaderboardBtn { background: #3498db; }
-    #leaderboardBtn:hover { background: #5dade2; }
-    
-    #timer {
-      position: fixed; top: 20px; right: 20px; color: white; font-size: 20px;
-      font-weight: bold; background: rgba(0,0,0,0.6); padding: 12px 24px;
-      border-radius: 8px; display: none; z-index: 50;
-    }
-    
-    #idleHint {
-      position: fixed; bottom: 20px; right: 20px; color: rgba(255,255,255,0.7);
-      font-size: 14px; background: rgba(0,0,0,0.4); padding: 8px 16px;
-      border-radius: 8px; display: none; z-index: 50;
-    }
-    
-    #leaderboardModal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7); z-index: 200; display: none;
-      justify-content: center; align-items: center;
-    }
-    #leaderboardContent {
-      background: rgba(20,30,48,0.95); color: white; border-radius: 12px;
-      padding: 24px; min-width: 320px; backdrop-filter: blur(10px);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
+    #leaderboardBtn { background: #3498db; } #leaderboardBtn:hover { background: #5dade2; }
+    #timer { position: fixed; top: 20px; right: 20px; color: white; font-size: 20px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 12px 24px; border-radius: 8px; display: none; z-index: 50; }
+    #clock { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 15px; background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 8px; display: none; z-index: 50; }
+    #idleHint { position: fixed; bottom: 20px; right: 20px; color: rgba(255,255,255,0.7); font-size: 14px; background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 8px; display: none; z-index: 50; }
+    #biomeBar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: none; gap: 8px; z-index: 50; }
+    #biomeBar button { padding: 8px 16px; font-size: 14px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.5); color: white; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    #biomeBar button.active { background: #27ae60; border-color: #27ae60; font-weight: bold; }
+    #leaderboardModal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: none; justify-content: center; align-items: center; }
+    #leaderboardContent { background: rgba(20,30,48,0.95); color: white; border-radius: 12px; padding: 24px; min-width: 320px; backdrop-filter: blur(10px); }
     #leaderboardContent h3 { margin: 0 0 15px 0; font-size: 20px; color: #f1c40f; }
     #leaderboardContent table { width: 100%; border-collapse: collapse; font-size: 16px; }
     #leaderboardContent td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     #leaderboardContent .me { background: rgba(39,174,96,0.4); border-radius: 6px; }
     #leaderboardContent .rank { color: #95a5a6; width: 30px; }
     #leaderboardContent .time { text-align: right; color: #bdc3c7; }
-    #closeLeaderboard {
-      margin-top: 15px; padding: 10px 20px; background: #e74c3c;
-      color: white; border: none; border-radius: 6px; cursor: pointer;
-    }
-    #closeLeaderboard:hover { background: #c0392b; }
-    
+    #closeLeaderboard { margin-top: 15px; padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    #exitBtn { position: fixed; top: 20px; left: 20px; padding: 12px 24px; font-size: 16px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; z-index: 50; display: none; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-
   <div id="loginForm">
     <h2>Симулятор Камня</h2>
     <input type="text" id="username" placeholder="Твоё имя">
     <button id="startBtn">Начать игру</button>
     <button id="leaderboardBtn">Таблица лидеров</button>
   </div>
-
-  <div id="leaderboardModal">
-    <div id="leaderboardContent">
-      <h3>Таблица лидеров (топ-10)</h3>
-      <table id="lbTable"></table>
-      <button id="closeLeaderboard">Закрыть</button>
-    </div>
+  <div id="leaderboardModal"><div id="leaderboardContent"><h3>Таблица лидеров (топ-10)</h3><table id="lbTable"></table><button id="closeLeaderboard">Закрыть</button></div></div>
+  <div id="timer">Время сессии: <span id="timeValue">0</span> сек</div>
+  <div id="clock">☀️ День</div>
+  <div id="idleHint">📷 Камера крутится сама — тронь мышь</div>
+  <div id="biomeBar">
+    <button data-b="forest" class="active">🌲 Лес</button>
+    <button data-b="winter">❄️ Зима</button>
+    <button data-b="beach">🏖️ Пляж</button>
+    <button data-b="desert">🏜️ Пустыня</button>
   </div>
-
-  <div id="timer">Время с камнем: <span id="timeValue">0</span> сек</div>
-  <div id="idleHint">📷 Камера крутится сама — тронь мышь, чтобы остановить</div>
+  <button id="exitBtn">🚪 Выйти и сохранить</button>
+  <canvas id="cv"></canvas>
 
   <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-    }
-  }
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
   </script>
 
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // ===== База данных =====
+    // ===== БД =====
+    const SUPABASE_URL = 'https://jndlzfteecpcguqxqpwd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_44I121BlKsABcW2sep0gIQ_Lkt3X6_m'.trim();
     let supabase = null;
-    (async () => {
+    function withTimeout(p, ms = 8000) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]); }
+    const dbReadyPromise = (async () => {
       try {
         const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-        supabase = createClient(
-          'https://jndlzfteecpcguqxqpwd.supabase.co',
-          'sb_publishable_44I121BlKsABcW2sep0gIQ_Lkt3X6_m'.trim()
-        );
-        const checkPromise = supabase.from('players').select('id').limit(1);
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500));
-        const { error } = await Promise.race([checkPromise, timeoutPromise]);
+        supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { error } = await withTimeout(supabase.from('players').select('id').limit(1));
         if (error) throw error;
-      } catch (e) {
-        supabase = null;
-      }
+        console.log('✅ БД подключена');
+      } catch (e) { console.warn('❌ БД недоступна (нужен GitHub Pages / http):', e.message); supabase = null; }
     })();
 
-    let playerId = null, playtime = 0;
-    const loginForm = document.getElementById('loginForm');
-    const startBtn = document.getElementById('startBtn');
-    const leaderboardBtn = document.getElementById('leaderboardBtn');
-    const usernameInput = document.getElementById('username');
-    const timerDiv = document.getElementById('timer');
-    const timeValue = document.getElementById('timeValue');
-    const idleHint = document.getElementById('idleHint');
-    const leaderboardModal = document.getElementById('leaderboardModal');
-    const closeLeaderboard = document.getElementById('closeLeaderboard');
-    const lbTable = document.getElementById('lbTable');
+    let playerId = null, baseTime = 0, sessionTime = 0, timerInterval = null;
+    const $ = id => document.getElementById(id);
+    const loginForm = $('loginForm'), startBtn = $('startBtn'), leaderboardBtn = $('leaderboardBtn');
+    const usernameInput = $('username'), timerDiv = $('timer'), timeValue = $('timeValue'), exitBtn = $('exitBtn');
+    const idleHint = $('idleHint'), clock = $('clock'), biomeBar = $('biomeBar');
+    const leaderboardModal = $('leaderboardModal'), closeLeaderboard = $('closeLeaderboard'), lbTable = $('lbTable');
 
-    // ===== Таблица лидеров =====
     async function refreshLeaderboard() {
       let players = [];
-      if (supabase) {
-        const { data } = await supabase.from('players')
-          .select('id, username, playtime')
-          .order('playtime', { ascending: false })
-          .limit(10);
-        if (data) players = data;
-      }
-      if (!players.length) {
-        players = JSON.parse(localStorage.getItem('rockPlayers') || '[]')
-          .sort((a, b) => b.playtime - a.playtime).slice(0, 10);
-      }
-      lbTable.innerHTML = players.map((p, i) =>
-        `<tr class="${p.id === playerId ? 'me' : ''}">
-           <td class="rank">${i + 1}</td><td>${p.username}</td>
-           <td class="time">${p.playtime} с</td></tr>`
-      ).join('') || '<tr><td colspan="3">Пока пусто</td></tr>';
+      if (supabase) { try { const { data } = await supabase.from('players').select('id, username, playtime').order('playtime', { ascending: false }).limit(10); if (data) players = data; } catch (e) {} }
+      if (!players.length) players = JSON.parse(localStorage.getItem('rockPlayers') || '[]').sort((a, b) => b.playtime - a.playtime).slice(0, 10);
+      lbTable.innerHTML = players.map((p, i) => `<tr class="${p.id === playerId ? 'me' : ''}"><td class="rank">${i + 1}</td><td>${p.username}</td><td class="time">${p.playtime} с</td></tr>`).join('') || '<tr><td colspan="3">Пока пусто</td></tr>';
     }
+    leaderboardBtn.addEventListener('click', () => { refreshLeaderboard(); leaderboardModal.style.display = 'flex'; });
+    closeLeaderboard.addEventListener('click', () => leaderboardModal.style.display = 'none');
 
-    leaderboardBtn.addEventListener('click', () => {
-      refreshLeaderboard();
-      leaderboardModal.style.display = 'flex';
-    });
-    closeLeaderboard.addEventListener('click', () => {
-      leaderboardModal.style.display = 'none';
-    });
-    leaderboardModal.addEventListener('click', (e) => {
-      if (e.target === leaderboardModal) leaderboardModal.style.display = 'none';
-    });
-
-    // ===== Сохранение времени =====
     async function savePlaytime() {
-      if (supabase) {
-        await supabase.from('players').update({ playtime }).eq('id', playerId);
-      } else {
-        const players = JSON.parse(localStorage.getItem('rockPlayers') || '[]');
-        const p = players.find(x => x.id === playerId);
-        if (p) p.playtime = playtime;
-        localStorage.setItem('rockPlayers', JSON.stringify(players));
+      const total = baseTime + sessionTime, name = usernameInput._name;
+      if (supabase && name) {
+        try {
+          const { data: ex } = await withTimeout(supabase.from('players').select('id').eq('username', name).maybeSingle());
+          if (ex) await withTimeout(supabase.from('players').update({ playtime: total }).eq('id', ex.id));
+          else await withTimeout(supabase.from('players').insert([{ username: name, playtime: total }]));
+          console.log('✅ Сохранено в БД:', total); return;
+        } catch (e) { console.warn('❌ БД ошибка:', e.message); }
       }
+      const players = JSON.parse(localStorage.getItem('rockPlayers') || '[]');
+      const p = players.find(x => x.username === name);
+      if (p) p.playtime = total; else players.push({ id: Date.now(), username: name, playtime: total });
+      localStorage.setItem('rockPlayers', JSON.stringify(players));
     }
 
-    // ===== Кнопка «Начать игру» =====
     startBtn.addEventListener('click', async () => {
-      const username = usernameInput.value.trim();
-      if (!username) return alert('Введи имя!');
-
-      if (supabase) {
-        try {
-          const checkPromise = supabase.from('players')
-            .select('id, playtime')
-            .eq('username', username)
-            .maybeSingle();
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500));
-          const { data: existing } = await Promise.race([checkPromise, timeoutPromise]);
-          if (existing) {
-            playerId = existing.id;
-            playtime = existing.playtime || 0;
-          } else {
-            const { data } = await supabase.from('players')
-              .insert([{ username, playtime: 0 }])
-              .select();
-            if (data) playerId = data[0].id;
-          }
-        } catch (e) {
-          supabase = null;
-        }
-      }
-
-      if (!playerId) {
-        const players = JSON.parse(localStorage.getItem('rockPlayers') || '[]');
-        const existing = players.find(p => p.username === username);
-        if (existing) {
-          playerId = existing.id;
-          playtime = existing.playtime || 0;
-        } else {
-          playerId = Date.now();
-          players.push({ id: playerId, username, playtime: 0 });
-          localStorage.setItem('rockPlayers', JSON.stringify(players));
-        }
-      }
-
-      loginForm.style.display = 'none';
-      timerDiv.style.display = 'block';
-      timeValue.textContent = playtime;
-
-      setInterval(() => {
-        playtime++;
-        timeValue.textContent = playtime;
-        if (playtime % 5 === 0) savePlaytime();
-      }, 1000);
+      const username = usernameInput.value.trim(); if (!username) return alert('Введи имя!');
+      usernameInput._name = username;
+      await dbReadyPromise;
+      if (supabase) { try { const { data: existing } = await withTimeout(supabase.from('players').select('id, playtime').eq('username', username).maybeSingle()); baseTime = existing ? (existing.playtime || 0) : 0; } catch (e) { supabase = null; baseTime = 0; } }
+      if (!supabase) { const players = JSON.parse(localStorage.getItem('rockPlayers') || '[]'); baseTime = (players.find(x => x.username === username) || {}).playtime || 0; }
+      sessionTime = 0;
+      loginForm.style.display = 'none'; timerDiv.style.display = 'block'; exitBtn.style.display = 'block';
+      clock.style.display = 'block'; biomeBar.style.display = 'flex'; timeValue.textContent = 0;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => { sessionTime++; timeValue.textContent = sessionTime; if (sessionTime % 5 === 0) savePlaytime(); }, 1000);
     });
 
-    // ===== 3D-мир =====
+    exitBtn.addEventListener('click', async () => {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      await savePlaytime();
+      baseTime = 0; sessionTime = 0; usernameInput.value = '';
+      loginForm.style.display = 'block'; timerDiv.style.display = 'none'; exitBtn.style.display = 'none';
+      clock.style.display = 'none'; biomeBar.style.display = 'none';
+    });
+
+    // ===== 3D МИР =====
+    const cv = $('cv');
     const scene = new THREE.Scene();
-
-    const skyCanvas = document.createElement('canvas');
-    skyCanvas.width = 2; skyCanvas.height = 512;
-    const ctx = skyCanvas.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 0, 512);
-    grad.addColorStop(0, '#4FC3F7');
-    grad.addColorStop(0.5, '#81D4FA');
-    grad.addColorStop(1, '#B3E5FC');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, 2, 512);
-    scene.background = new THREE.CanvasTexture(skyCanvas);
-    scene.fog = new THREE.Fog(0xB3E5FC, 40, 120);
-
-    const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 300);
-    camera.position.set(0, 3, 8);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+    camera.position.set(0, 8, 18); // Безопасная позиция внутри лимитов
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: cv });
     renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    document.body.appendChild(renderer.domElement);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.9; // Сбалансированная яркость
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0x87CEEB, 1); // ЗАПАСНОЙ ФОН (решает проблему чёрного экрана)
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    sunLight.position.set(20, 30, 15);
-    sunLight.castShadow = true;
-    sunLight.shadow.camera.left = -35; sunLight.shadow.camera.right = 35;
-    sunLight.shadow.camera.top = 35; sunLight.shadow.camera.bottom = -35;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    scene.add(sunLight);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambient);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.2); sunLight.castShadow = true;
+    sunLight.shadow.camera.left = -50; sunLight.shadow.camera.right = 50; sunLight.shadow.camera.top = 50; sunLight.shadow.camera.bottom = -50;
+    sunLight.shadow.mapSize.set(2048, 2048); scene.add(sunLight);
+    
+    const sunBall = new THREE.Mesh(new THREE.SphereGeometry(5, 16, 16), new THREE.MeshBasicMaterial({ fog: false })); scene.add(sunBall);
+    const moonBall = new THREE.Mesh(new THREE.SphereGeometry(3, 16, 16), new THREE.MeshBasicMaterial({ color: 0xdfe6ff, fog: false })); moonBall.visible = false; scene.add(moonBall);
+    
+    const starGeo = new THREE.BufferGeometry();
+    { const arr = []; for (let i = 0; i < 600; i++) { const a = Math.random() * 6.28, e = Math.random() * 1.57, r = 200; arr.push(Math.cos(a)*Math.cos(e)*r, Math.sin(e)*r+20, Math.sin(a)*Math.cos(e)*r); } starGeo.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3)); }
+    const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, fog: false })); stars.visible = false; scene.add(stars);
 
-    const sunBall = new THREE.Mesh(
-      new THREE.SphereGeometry(5, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0xFFEB3B, fog: false })
-    );
-    sunBall.position.set(40, 35, -100);
-    scene.add(sunBall);
+    const LAKE = { x: 26, z: -18, r: 11 };
+    const BIOMES = {
+      forest: { sky: ['#4FC3F7', '#81D4FA', '#B3E5FC'], fog: 0xB3E5FC, fogFar: 130, sun: 0xffffff, sunI: 1.2, amb: 0.6, mtn: [0x6D6D7A, 0x5C6B73, 0x7A6A5A, 0x6B705C], dune: 0.22, ground: { dark: 0x558B2F, light: 0x9CCC65, dirt: 0x8D6E63 }, height: 1, water: 0x2196F3, frozen: false, trees: 'forest', animals: { small: ['rabbit', 8], big: ['dog', 5] }, particles: null },
+      winter: { sky: ['#B0C4DE', '#D7E3F4', '#EAF2FF'], fog: 0xEAF2FF, fogFar: 110, sun: 0xE3F0FF, sunI: 1.1, amb: 0.7, mtn: [0x8A97A8, 0x7A8899, 0x9FB4C7], dune: 0.22, ground: { dark: 0xDDE6F0, light: 0xF5FAFF, dirt: 0xC5D2E0 }, height: 0.8, water: 0x9FD4FF, frozen: true, trees: 'winter', animals: { small: ['penguin', 9], big: ['deer', 4] }, particles: 'snow' },
+      beach: { sky: ['#29B6F6', '#81D4FA', '#FFF3C4'], fog: 0xCDEFFB, fogFar: 150, sun: 0xFFF3D0, sunI: 1.4, amb: 0.7, mtn: [0xC9A06A, 0xB8925A, 0xD9B87A, 0xA88050], dune: 0.16, ground: { dark: 0xD9B87A, light: 0xF0DCA8, dirt: 0xB8925A }, height: 0.5, water: 0x18A9E0, frozen: false, sea: true, trees: 'beach', animals: { small: ['crab', 10], big: ['seal', 3] }, particles: null },
+      desert: { sky: ['#FFB74D', '#FFD180', '#FFE9B0'], fog: 0xFFE0A0, fogFar: 140, sun: 0xFFDFA0, sunI: 1.4, amb: 0.7, mtn: [0xC8954E, 0xB07830, 0xD4A76A, 0xA87030], dune: 0.14, ground: { dark: 0xC8954E, light: 0xE8C888, dirt: 0xA87030 }, height: 1.4, water: 0x26C6DA, frozen: false, trees: 'desert', animals: { small: ['lizard', 8], big: ['camel', 3] }, particles: 'dust' },
+    };
+    let biome = 'forest';
 
-    // ===== РЕЛЬЕФНЫЙ ПОЛУСТАНОВКА: плавные холмы + цветные пятна =====
     function heightAt(x, z) {
-      const d = Math.hypot(x, z);
-      const flat = Math.min(1, Math.max(0, (d - 7) / 12)); // поляна у камня ровная
-      return flat * (
-        Math.sin(x * 0.08) * Math.cos(z * 0.07) * 1.3 +
-        Math.sin(x * 0.21 + z * 0.13) * 0.45 +
-        Math.sin(x * 0.05 - z * 0.04) * 1.6
-      );
+      const b = BIOMES[biome], d = Math.hypot(x, z);
+      const flat = Math.min(1, Math.max(0, (d - 7) / 12));
+      let h = flat * (Math.sin(x * 0.08) * Math.cos(z * 0.07) * 1.3 + Math.sin(x * 0.21 + z * 0.13) * 0.45 + Math.sin(x * 0.05 - z * 0.04) * 1.6) * b.height;
+      const dl = Math.hypot(x - LAKE.x, z - LAKE.z);
+      if (dl < LAKE.r) h -= (1 - dl / LAKE.r) * 2.2;
+      if (b.sea && x > 60) h -= Math.min(4, (x - 60) * 0.15);
+      return h;
     }
 
-    const groundGeo = new THREE.PlaneGeometry(400, 400, 120, 120);
-    groundGeo.rotateX(-Math.PI / 2);
-    {
-      const gPos = groundGeo.attributes.position;
-      const colAttr = new Float32Array(gPos.count * 3);
-      const dark = new THREE.Color(0x558B2F);
-      const light = new THREE.Color(0x9CCC65);
-      const dirt = new THREE.Color(0x8D6E63);
-      const tmp = new THREE.Color();
-      for (let i = 0; i < gPos.count; i++) {
-        const x = gPos.getX(i), z = gPos.getZ(i);
-        gPos.setY(i, heightAt(x, z));
-        // пестрый травяной окрас
+    let world = new THREE.Group(); scene.add(world);
+    let waterMesh = null, particleSystem = null, fireflies = [];
+    let trees = [], clouds = [], smallA = [], bigA = [];
+    const M = (c) => new THREE.MeshStandardMaterial({ color: c, flatShading: true });
+    const MS = (c) => new THREE.MeshStandardMaterial({ color: c });
+    const eye = (x,y,z,s=0.04) => { const e=new THREE.Mesh(new THREE.SphereGeometry(s,8,8),M(0x1a1a1a)); e.position.set(x,y,z); return e; };
+
+    // Нога с pivot в бедре, висящая вниз
+    function limb(x, hipY, z, len, rad, color) {
+      const g = new THREE.Group(); g.position.set(x, hipY, z);
+      const m = new THREE.Mesh(new THREE.CapsuleGeometry(rad, len, 4, 8), M(color));
+      m.position.y = -(len / 2); m.castShadow = true; g.add(m);
+      return g;
+    }
+
+    function clearWorld() { while (world.children.length) { const o = world.children.pop(); o.traverse && o.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) (Array.isArray(c.material) ? c.material : [c.material]).forEach(m => m.dispose()); }); } world = new THREE.Group(); scene.add(world); trees=[]; clouds=[]; smallA=[]; bigA=[]; fireflies=[]; waterMesh=null; }
+
+    function buildGround() {
+      const b = BIOMES[biome];
+      const g = new THREE.PlaneGeometry(400, 400, 130, 130); g.rotateX(-Math.PI / 2);
+      const p = g.attributes.position, col = new Float32Array(p.count * 3);
+      const dark = new THREE.Color(b.ground.dark), light = new THREE.Color(b.ground.light), dirt = new THREE.Color(b.ground.dirt), tmp = new THREE.Color();
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), z = p.getZ(i); p.setY(i, heightAt(x, z));
         const n = 0.5 + 0.5 * Math.sin(x * 0.5) * Math.sin(z * 0.45) * Math.sin((x + z) * 0.13);
         tmp.copy(dark).lerp(light, n);
-        // земляная тропка вокруг камня и пятна
-        const d = Math.hypot(x, z);
-        if (d < 3.5) tmp.lerp(dirt, (3.5 - d) / 3.5 * 0.7);
-        const patch = Math.sin(x * 0.11 + 2) * Math.sin(z * 0.09 - 1);
-        if (patch > 0.75) tmp.lerp(dirt, 0.25);
-        colAttr[i * 3] = tmp.r; colAttr[i * 3 + 1] = tmp.g; colAttr[i * 3 + 2] = tmp.b;
+        const d = Math.hypot(x, z); if (d < 3.5) tmp.lerp(dirt, (3.5 - d) / 3.5 * 0.7);
+        const path = Math.abs(z - (LAKE.z * (x / LAKE.x))); if (x > 0 && x < LAKE.x && path < 2) tmp.lerp(dirt, 0.5);
+        col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;
       }
-      groundGeo.setAttribute('color', new THREE.BufferAttribute(colAttr, 3));
-      groundGeo.computeVertexNormals();
-    }
-    const ground = new THREE.Mesh(
-      groundGeo,
-      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })
-    );
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    // ===== ТРАВА (InstancedMesh — тысячи травинок без тормозов) =====
-    {
-      const bladeGeo = new THREE.ConeGeometry(0.05, 0.5, 4);
-      bladeGeo.translate(0, 0.25, 0);
-      const bladeMat = new THREE.MeshStandardMaterial({ color: 0x66BB6A, flatShading: true });
-      const COUNT = 1500;
-      const grass = new THREE.InstancedMesh(bladeGeo, bladeMat, COUNT);
-      const dummy = new THREE.Object3D();
-      for (let i = 0; i < COUNT; i++) {
-        const a = Math.random() * Math.PI * 2, d = 1.5 + Math.random() * 32;
-        const x = Math.cos(a) * d, z = Math.sin(a) * d;
-        dummy.position.set(x, heightAt(x, z), z);
-        dummy.rotation.set((Math.random() - 0.5) * 0.5, Math.random() * Math.PI, (Math.random() - 0.5) * 0.5);
-        dummy.scale.setScalar(0.5 + Math.random() * 1.0);
-        dummy.updateMatrix();
-        grass.setMatrixAt(i, dummy.matrix);
-      }
-      scene.add(grass);
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); m.receiveShadow = true; world.add(m);
     }
 
-    // ===== ГОРЫ: несколько вершин + снежные шапки =====
-    for (let i = 0; i < 25; i++) {
-      const mountain = new THREE.Group();
-      const peaks = 3 + Math.floor(Math.random() * 3);
-      for (let p = 0; p < peaks; p++) {
-        const h = 8 + Math.random() * 16;
-        const r = 8 + Math.random() * 10;
-        const peak = new THREE.Mesh(
-          new THREE.ConeGeometry(r, h, 7),
-          new THREE.MeshStandardMaterial({
-            color: new THREE.Color().setHSL(0.25 + Math.random() * 0.1, 0.5, 0.32 + Math.random() * 0.15),
-            flatShading: true
-          })
-        );
-        peak.position.set((p - peaks / 2) * 6, h / 2, (Math.random() - 0.5) * 6);
-        peak.rotation.y = Math.random() * Math.PI;
-        mountain.add(peak);
-        if (h > 14) { // снежная шапка
-          const snow = new THREE.Mesh(
-            new THREE.ConeGeometry(r * 0.32, h * 0.3, 7),
-            new THREE.MeshStandardMaterial({ color: 0xF5F5F5, flatShading: true })
-          );
-          snow.position.set(peak.position.x, h * 0.87, peak.position.z);
-          snow.rotation.y = peak.rotation.y;
-          mountain.add(snow);
+    function buildWater() {
+      const b = BIOMES[biome];
+      const geo = new THREE.CircleGeometry(b.sea ? 200 : LAKE.r - 0.5, 48); geo.rotateX(-Math.PI / 2);
+      const mat = new THREE.MeshPhysicalMaterial({ color: b.water, roughness: 0.1, metalness: 0.2, transparent: true, opacity: b.frozen ? 0.95 : 0.75, transmission: b.frozen ? 0 : 0.4 });
+      waterMesh = new THREE.Mesh(geo, mat);
+      waterMesh.position.set(b.sea ? 130 : LAKE.x, -0.9, b.sea ? 0 : LAKE.z);
+      if (b.sea) waterMesh.scale.set(1, 1, 1.4);
+      world.add(waterMesh);
+      if (!b.sea) { const sc = new THREE.PlaneGeometry(3, 26); sc.rotateX(-Math.PI / 2); const stream = new THREE.Mesh(sc, mat); stream.position.set(LAKE.x - 12, -0.85, LAKE.z + 8); stream.rotation.y = 0.5; world.add(stream); }
+    }
+
+    function buildMountains() {
+      const cols = BIOMES[biome].mtn;
+      const snowy = (biome === 'winter' || biome === 'forest');
+      const duneY = BIOMES[biome].dune;
+      for (let i = 0; i < 26; i++) {
+        const g = new THREE.Group(); const kind = Math.random();
+        const baseCol = cols[Math.floor(Math.random() * cols.length)];
+        if (kind < 0.45 && snowy) {
+          const peaks = 2 + (Math.random() * 3 | 0);
+          for (let p = 0; p < peaks; p++) {
+            const h = 12 + Math.random() * 18, r = 7 + Math.random() * 8;
+            const peak = new THREE.Mesh(new THREE.ConeGeometry(r, h, 6), M(new THREE.Color(baseCol).offsetHSL(0,0,(Math.random()-.5)*0.1)));
+            peak.position.set((p - peaks/2) * 8, h/2, (Math.random()-.5)*7); peak.rotation.y = Math.random()*3.14; g.add(peak);
+            if (h > 18) { const s = new THREE.Mesh(new THREE.ConeGeometry(r*0.32, h*0.28, 6), M(0xF5F5F5)); s.position.set(peak.position.x, h*0.87, peak.position.z); g.add(s); }
+          }
+        } else {
+          const blobs = 3 + (Math.random()*3|0);
+          for (let p = 0; p < blobs; p++) {
+            const r = 14 + Math.random()*16;
+            const b = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 8, 0, 6.28, 0, 1.57), M(new THREE.Color(baseCol).offsetHSL(0,0,(Math.random()-.5)*0.08)));
+            b.scale.set(1, duneY + Math.random()*0.1, 1.15); b.position.set((p-blobs/2)*11, 0, (Math.random()-.5)*8); b.receiveShadow = true; g.add(b);
+          }
         }
+        const ang = (i/26)*6.28 + (Math.random()-.5)*0.3, dist = 80 + Math.random()*45;
+        const mx = Math.cos(ang)*dist, mz = Math.sin(ang)*dist;
+        g.position.set(mx, heightAt(mx, mz)-1, mz); g.rotation.y = Math.random()*3.14;
+        world.add(g);
       }
-      const ang = (i / 25) * Math.PI * 2;
-      const dist = 70 + Math.random() * 30;
-      const mx = Math.cos(ang) * dist, mz = Math.sin(ang) * dist;
-      mountain.position.set(mx, heightAt(mx, mz), mz);
-      scene.add(mountain);
+      const cave = new THREE.Group();
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(5, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), M(biome === 'winter' ? 0x9FB4C7 : 0x5A5A66));
+      dome.scale.set(1.5, 0.5, 1); dome.position.y = -2.2; dome.castShadow = true; cave.add(dome);
+      const hole = new THREE.Mesh(new THREE.CircleGeometry(2, 14), new THREE.MeshBasicMaterial({ color: 0x05060a }));
+      hole.position.set(0, 0.6, 4.6); cave.add(hole);
+      const cx = -55, cz = 30; cave.position.set(cx, heightAt(cx, cz) + 0.3, cz); cave.rotation.y = 0.6;
+      world.add(cave);
     }
 
-    // ===== ДЕРЕВЬЯ: два вида (сосна и лиственное), покачиваются на ветру =====
-    const trees = [];
-    function makePine() {
-      const tree = new THREE.Group();
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.22, 0.4, 3, 7),
-        new THREE.MeshStandardMaterial({ color: 0x5D4037, flatShading: true })
-      );
-      trunk.position.y = 1.5; trunk.castShadow = true;
-      tree.add(trunk);
-      const colors = [0x1B5E20, 0x2E7D32, 0x388E3C, 0x43A047, 0x4CAF50];
-      for (let j = 0; j < 5; j++) {
-        const leaves = new THREE.Mesh(
-          new THREE.ConeGeometry(2.6 - j * 0.42, 1.9, 7),
-          new THREE.MeshStandardMaterial({ color: colors[j], flatShading: true })
-        );
-        leaves.position.y = 2.6 + j * 1.35;
-        leaves.rotation.y = Math.random() * Math.PI;
-        leaves.castShadow = true;
-        tree.add(leaves);
+    function buildFlora() {
+      const b = BIOMES[biome];
+      if (biome !== 'beach' && biome !== 'desert') {
+        const bg = new THREE.ConeGeometry(0.05, 0.5, 4); bg.translate(0, 0.25, 0);
+        const bm = new THREE.MeshStandardMaterial({ color: biome === 'winter' ? 0xE8F0F8 : 0x66BB6A, flatShading: true });
+        const gr = new THREE.InstancedMesh(bg, bm, 1500); const dm = new THREE.Object3D();
+        for (let i = 0; i < 1500; i++) { const a = Math.random() * 6.28, d = 1.5 + Math.random() * 32; const x = Math.cos(a) * d, z = Math.sin(a) * d; dm.position.set(x, heightAt(x, z), z); dm.rotation.set((Math.random() - .5) * .5, Math.random() * 3.14, (Math.random() - .5) * .5); dm.scale.setScalar(.5 + Math.random()); dm.updateMatrix(); gr.setMatrixAt(i, dm.matrix); }
+        world.add(gr);
       }
-      return tree;
-    }
-    function makeBroadleaf() {
-      const tree = new THREE.Group();
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.25, 0.45, 3.2, 7),
-        new THREE.MeshStandardMaterial({ color: 0x6D4C41, flatShading: true })
-      );
-      trunk.position.y = 1.6; trunk.castShadow = true;
-      tree.add(trunk);
-      // ветки
-      for (let b = 0; b < 3; b++) {
-        const branch = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.07, 0.13, 1.3, 5),
-          new THREE.MeshStandardMaterial({ color: 0x6D4C41, flatShading: true })
-        );
-        const ang = (b / 3) * Math.PI * 2 + Math.random();
-        branch.position.set(Math.cos(ang) * 0.5, 2.6, Math.sin(ang) * 0.5);
-        branch.rotation.z = Math.cos(ang) * 0.7;
-        branch.rotation.x = Math.sin(ang) * 0.7;
-        tree.add(branch);
-      }
-      // пышная крона из нескольких шаров
-      const greens = [0x388E3C, 0x43A047, 0x4CAF50, 0x66BB6A];
-      for (let j = 0; j < 5; j++) {
-        const blob = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(1.1 + Math.random() * 0.5, 0),
-          new THREE.MeshStandardMaterial({ color: greens[j % 4], flatShading: true })
-        );
-        blob.position.set((Math.random() - 0.5) * 1.6, 3.6 + Math.random() * 1.2, (Math.random() - 0.5) * 1.6);
-        blob.castShadow = true;
-        tree.add(blob);
-      }
-      return tree;
-    }
-    for (let i = 0; i < 45; i++) {
-      const tree = (Math.random() < 0.55) ? makePine() : makeBroadleaf();
-      const a = Math.random() * Math.PI * 2;
-      const d = 9 + Math.random() * 40;
-      const x = Math.cos(a) * d, z = Math.sin(a) * d;
-      tree.position.set(x, heightAt(x, z), z);
-      tree.scale.setScalar(0.8 + Math.random() * 0.6);
-      tree.userData.phase = Math.random() * Math.PI * 2;
-      scene.add(tree);
-      trees.push(tree);
-    }
+      const treeFn = { forest: () => Math.random() < .55 ? pine() : broadleaf(), winter: () => snowPine(), beach: () => palm(), desert: () => cactus() }[b.trees];
+      const count = biome === 'beach' ? 16 : biome === 'desert' ? 22 : 45;
+      for (let i = 0; i < count; i++) { const t = treeFn(); const a = Math.random() * 6.28, d = 12 + Math.random() * 38; const x = Math.cos(a) * d, z = Math.sin(a) * d; if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r + 2) continue; t.position.set(x, heightAt(x, z), z); t.scale.setScalar(0.8 + Math.random() * 0.5); t.userData.phase = Math.random() * 6.28; world.add(t); trees.push(t); }
 
-    // ===== КУСТЫ: много сфер + ягоды =====
-    for (let i = 0; i < 35; i++) {
-      const bush = new THREE.Group();
-      const spheres = 4 + Math.floor(Math.random() * 4);
-      for (let s = 0; s < spheres; s++) {
-        const sphere = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(0.45 + Math.random() * 0.35, 0),
-          new THREE.MeshStandardMaterial({
-            color: new THREE.Color().setHSL(0.25 + Math.random() * 0.06, 0.7, 0.28 + Math.random() * 0.16),
-            flatShading: true
-          })
-        );
-        sphere.position.set((Math.random() - 0.5) * 1.1, Math.random() * 0.35, (Math.random() - 0.5) * 1.1);
-        sphere.castShadow = true;
-        bush.add(sphere);
-      }
-      // ягоды
-      if (Math.random() < 0.5) {
-        for (let b = 0; b < 6; b++) {
-          const berry = new THREE.Mesh(
-            new THREE.SphereGeometry(0.07, 5, 5),
-            new THREE.MeshStandardMaterial({ color: Math.random() < 0.5 ? 0xE53935 : 0x3949AB })
-          );
-          berry.position.set((Math.random() - 0.5) * 1.1, 0.35 + Math.random() * 0.3, (Math.random() - 0.5) * 1.1);
-          bush.add(berry);
+      for (let i = 0; i < 35; i++) { const bu = new THREE.Group(); const sp = 4 + (Math.random() * 4 | 0); for (let s = 0; s < sp; s++) { const sh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.45 + Math.random() * 0.35, 0), M(new THREE.Color().setHSL(biome === 'desert' ? 0.1 : 0.25, 0.7, biome === 'winter' ? 0.7 : 0.3))); sh.position.set((Math.random() - .5) * 1.1, Math.random() * 0.35, (Math.random() - .5) * 1.1); sh.castShadow = true; bu.add(sh); } const a = Math.random() * 6.28, d = 6 + Math.random() * 32; const x = Math.cos(a) * d, z = Math.sin(a) * d; if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r + 1) continue; bu.position.set(x, heightAt(x, z), z); world.add(bu); }
+
+      if (biome === 'forest' || biome === 'winter') for (let i = 0; i < 160; i++) { const fl = new THREE.Group(); const st = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.35, 4), M(0x558B2F)); st.position.y = 0.175; fl.add(st); const pm = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(Math.random(), 0.85, 0.62), side: 2, flatShading: true }); for (let p = 0; p < 6; p++) { const pe = new THREE.Mesh(new THREE.CircleGeometry(0.08, 6), pm); const pa = p / 6 * 6.28; pe.position.set(Math.cos(pa) * 0.07, 0.36, Math.sin(pa) * 0.07); pe.rotation.x = -1; pe.rotation.y = -pa; fl.add(pe); } const a = Math.random() * 6.28, d = 3 + Math.random() * 28; const x = Math.cos(a) * d, z = Math.sin(a) * d; if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r) continue; fl.position.set(x, heightAt(x, z), z); world.add(fl); }
+
+      for (let c = 0; c < 18; c++) {
+        const cl = new THREE.Group(); const puffs = 5 + (Math.random()*8|0);
+        for (let p = 0; p < puffs; p++) {
+          const r = 1 + Math.random()*2.5;
+          const pf = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 2), MS(0xffffff));
+          pf.position.set((Math.random()-.5)*8, (Math.random()-.5)*2, (Math.random()-.5)*3);
+          pf.scale.set(1 + Math.random()*0.6, 0.55 + Math.random()*0.35, 1 + Math.random()*0.6);
+          cl.add(pf);
         }
+        cl.position.set(-90 + Math.random()*180, 16 + Math.random()*12, -60 - Math.random()*40);
+        cl.userData.speed = 0.008 + Math.random()*0.02;
+        world.add(cl); clouds.push(cl);
       }
-      const a = Math.random() * Math.PI * 2;
-      const d = 5 + Math.random() * 32;
-      const x = Math.cos(a) * d, z = Math.sin(a) * d;
-      bush.position.set(x, heightAt(x, z), z);
-      scene.add(bush);
+
+      if (biome !== 'winter') for (let i = 0; i < (biome === 'desert' ? 8 : 22); i++) { const bt = new THREE.Group(); const wm = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(Math.random(), 0.9, 0.65), side: 2, flatShading: true }); const body = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.025, 0.35, 6), M(0x212121)); body.rotation.x = 1.57; bt.add(body); const wl = new THREE.Mesh(new THREE.CircleGeometry(0.24, 8), wm); wl.rotation.x = -1.57; wl.position.set(-0.15, 0, 0); const wr = wl.clone(); wr.position.x = 0.15; bt.add(wl, wr); bt.userData = { wl, wr, phase: Math.random() * 6.28, angle: Math.random() * 6.28, radius: 4 + Math.random() * 16, speed: 0.4 + Math.random() * 0.6, height: 1.5 + Math.random() * 3, rot: 0 }; world.add(bt); }
+
+      const sm = { rabbit: makeRabbit, penguin: makePenguin, crab: makeCrab, lizard: makeLizard }[b.animals.small[0]];
+      const bg = { dog: makeDog, deer: makeDeer, seal: makeSeal, camel: makeCamel }[b.animals.big[0]];
+      for (let i = 0; i < b.animals.small[1]; i++) { const an = sm(); const a = Math.random() * 6.28, d = 8 + Math.random() * 20; const x = Math.cos(a) * d, z = Math.sin(a) * d; if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r) continue; an.position.set(x, heightAt(x, z), z); an.userData = { speed: 0.8 + Math.random() * 0.7, legs: an.userData.legs, phase: Math.random() * 6, tx: x, tz: z, rest: Math.random() * 3, minD: 5, maxD: 28, rot: 0, baseY: 0 }; world.add(an); smallA.push(an); }
+      for (let i = 0; i < b.animals.big[1]; i++) { const an = bg(); const a = Math.random() * 6.28, d = 12 + Math.random() * 15; const x = Math.cos(a) * d, z = Math.sin(a) * d; if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r) continue; an.position.set(x, heightAt(x, z), z); an.userData = { speed: 1.3 + Math.random() * 0.8, legs: an.userData.legs, tail: an.userData.tail, head: an.userData.head, phase: Math.random() * 6, tx: x, tz: z, rest: Math.random() * 3, minD: 8, maxD: 26, rot: 0, baseY: 0 }; world.add(an); bigA.push(an); }
+
+      if (biome === 'forest') for (let i = 0; i < 40; i++) { const ff = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: 0xfff59d })); ff.position.set((Math.random() - .5) * 50, 1 + Math.random() * 3, (Math.random() - .5) * 50); ff.userData = { base: ff.position.clone(), ph: Math.random() * 6 }; world.add(ff); fireflies.push(ff); }
+      if (b.particles) { const pg = new THREE.BufferGeometry(); const pa = []; for (let i = 0; i < 400; i++) pa.push((Math.random() - .5) * 120, Math.random() * 60, (Math.random() - .5) * 120); pg.setAttribute('position', new THREE.Float32BufferAttribute(pa, 3)); particleSystem = new THREE.Points(pg, new THREE.PointsMaterial({ color: b.particles === 'snow' ? 0xffffff : 0xE0C080, size: b.particles === 'snow' ? 0.4 : 0.25, transparent: true, opacity: 0.8 })); world.add(particleSystem); } else particleSystem = null;
     }
 
-    // ===== ЦВЕТЫ: стебель + лепестки-диски =====
-    for (let i = 0; i < 160; i++) {
-      const flower = new THREE.Group();
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.025, 0.035, 0.35, 4),
-        new THREE.MeshStandardMaterial({ color: 0x558B2F })
-      );
-      stem.position.y = 0.175;
-      flower.add(stem);
-      const hue = Math.random();
-      const petalMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(hue, 0.85, 0.62),
-        side: THREE.DoubleSide, flatShading: true
+    // ===== РАСТЕНИЯ =====
+    function pine() { const t = new THREE.Group(); const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.4, 3, 7), M(0x5D4037)); tr.position.y = 1.5; tr.castShadow = true; t.add(tr); const cs = [0x1B5E20, 0x2E7D32, 0x388E3C, 0x43A047, 0x4CAF50]; for (let j = 0; j < 5; j++) { const l = new THREE.Mesh(new THREE.ConeGeometry(2.6 - j * 0.42, 1.9, 7), M(cs[j])); l.position.y = 2.6 + j * 1.35; l.rotation.y = Math.random() * 3.14; l.castShadow = true; t.add(l); } return t; }
+    function snowPine() { const t = pine(); t.children.forEach(c => { if (c.geometry.type === 'ConeGeometry' && c.position.y > 2) { const s = new THREE.Mesh(new THREE.ConeGeometry(c.geometry.parameters.radius * 0.8, 0.6, 7), M(0xF5F5F5)); s.position.y = c.position.y + 0.6; t.add(s); } }); return t; }
+    function broadleaf() { const t = new THREE.Group(); const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.45, 3.2, 7), M(0x6D4C41)); tr.position.y = 1.6; tr.castShadow = true; t.add(tr); const gs = [0x388E3C, 0x43A047, 0x4CAF50, 0x66BB6A]; for (let j = 0; j < 5; j++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1 + Math.random() * 0.5, 1), M(gs[j % 4])); b.position.set((Math.random() - .5) * 1.6, 3.6 + Math.random() * 1.2, (Math.random() - .5) * 1.6); b.castShadow = true; t.add(b); } return t; }
+    
+    function palm() {
+      const t = new THREE.Group();
+      const lean = (Math.random() - .5) * 0.25;
+      const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.32, 4.5, 8), M(0x9C7A4A));
+      tr.position.y = 2.25; tr.rotation.z = lean; tr.castShadow = true; t.add(tr);
+      const topY = 4.5 + Math.sin(lean) * 0.1;
+      for (let j = 0; j < 8; j++) {
+        const a = j / 8 * 6.283;
+        const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 2.0), M(0x2E8B3A));
+        leaf.position.set(Math.cos(a) * 1.0, topY, Math.sin(a) * 1.0);
+        leaf.rotation.y = -a;
+        leaf.rotation.x = 0.6; // Провис вниз
+        leaf.castShadow = true;
+        t.add(leaf);
+      }
+      const coco = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 6), M(0x5D4037));
+      coco.position.set(0.2, topY - 0.2, 0); t.add(coco);
+      return t;
+    }
+    
+    function cactus() { const t = new THREE.Group(); const col = 0x6FA84B; const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 2.6, 9), M(col)); tr.position.y = 1.3; tr.castShadow = true; t.add(tr); if (Math.random() < 0.7) { const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 1.2, 8), M(col)); arm.position.set(0.6, 1.6, 0); arm.rotation.z = -0.9; t.add(arm); const up = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.8, 8), M(col)); up.position.set(0.95, 2.1, 0); t.add(up); } if (Math.random() < 0.5) { const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 1, 8), M(col)); arm.position.set(-0.55, 1.9, 0); arm.rotation.z = 0.9; t.add(arm); } const flower = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), M(Math.random()<0.5 ? 0xE91E63 : 0xFFEB3B)); flower.position.y = 2.6; t.add(flower); return t; }
+
+    // ===== ЖИВОТНЫЕ =====
+    function makeRabbit(){ const r=new THREE.Group(); const c=0xE0D5CF, ec=0xC9B8B0;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.3,12,10),M(c)); b.scale.set(1,0.9,1.3); b.position.y=0.38; b.castShadow=true; r.add(b);
+      const hd=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),M(c)); hd.position.set(0,0.55,0.36); r.add(hd);
+      r.add(eye(-0.1,0.6,0.52,0.035),eye(0.1,0.6,0.52,0.035));
+      const ns=new THREE.Mesh(new THREE.SphereGeometry(0.035,6,6),M(0xEF9A9A)); ns.position.set(0,0.52,0.56); r.add(ns);
+      for(const s of[-1,1]){ const e=new THREE.Mesh(new THREE.CapsuleGeometry(0.05,0.26,4,8),M(ec)); e.position.set(s*0.09,0.82,0.3); e.rotation.x=-0.2; r.add(e); }
+      const legs=[]; [[-0.14,0.3,0.2],[0.14,0.3,0.2],[-0.14,0.3,-0.2],[0.14,0.3,-0.2]].forEach(p=>{ const l=limb(p[0],p[1],p[2],0.18,0.07,ec); r.add(l); legs.push(l); });
+      const tl=new THREE.Mesh(new THREE.SphereGeometry(0.09,8,6),M(0xFFFFFF)); tl.position.set(0,0.32,-0.44); r.add(tl);
+      r.userData={legs}; return r; }
+      
+    function makePenguin(){ const p=new THREE.Group(); const c=0x2E3A45;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.38,12,10),M(c)); b.scale.set(0.85,1.2,0.8); b.position.y=0.5; b.castShadow=true; p.add(b);
+      const belly=new THREE.Mesh(new THREE.SphereGeometry(0.3,12,10),M(0xFAFAFA)); belly.scale.set(0.8,1.1,0.6); belly.position.set(0,0.48,0.13); p.add(belly);
+      const hd=new THREE.Mesh(new THREE.SphereGeometry(0.2,12,10),M(c)); hd.position.y=0.92; p.add(hd);
+      p.add(eye(-0.08,0.95,0.16,0.035),eye(0.08,0.95,0.16,0.035));
+      const beak=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.18,6),M(0xFFA000)); beak.position.set(0,0.9,0.2); beak.rotation.x=1.57; p.add(beak);
+      const legs=[]; [[-0.11,0.12,0.04],[0.11,0.12,0.04]].forEach(pos=>{ const l=limb(pos[0],pos[1],pos[2],0.1,0.05,0xFFA000); p.add(l); legs.push(l); });
+      p.userData={legs}; return p; }
+      
+    function makeCrab(){ const c=new THREE.Group(); const col=0xE04040;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.3,12,10),M(col)); b.scale.set(1.3,0.6,1); b.position.y=0.22; b.castShadow=true; c.add(b);
+      for(const s of[-1,1]){ const st=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.14,5),M(col)); st.position.set(s*0.13,0.36,0.04); c.add(st); c.add(eye(s*0.13,0.44,0.04,0.04));
+        const claw=new THREE.Mesh(new THREE.SphereGeometry(0.12,8,6),M(0xC62828)); claw.scale.set(1.2,0.8,1); claw.position.set(s*0.45,0.18,0.22); c.add(claw); }
+      const legs=[]; for(let i=0;i<3;i++)for(const s of[-1,1]){ const l=limb(s*0.3,0.16,(i-1)*0.16,0.14,0.03,0xB71C1C); l.rotation.z=s*0.4; c.add(l); legs.push(l); }
+      c.userData={legs}; return c; }
+      
+    function makeLizard(){ const l=new THREE.Group(); const c=0x4CAF50;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,8),M(c)); b.scale.set(2.4,0.7,0.9); b.position.y=0.16; b.castShadow=true; l.add(b);
+      const hd=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8),M(c)); hd.scale.set(1.3,0.9,1); hd.position.set(0.42,0.18,0); l.add(hd);
+      l.add(eye(0.48,0.24,0.07,0.025),eye(0.48,0.24,-0.07,0.025));
+      const tail=new THREE.Mesh(new THREE.ConeGeometry(0.11,0.6,6),M(0x388E3C)); tail.position.set(-0.5,0.16,0); tail.rotation.z=1.57; l.add(tail);
+      const legs=[]; [[0.2,0.14,0.14],[0.2,0.14,-0.14],[-0.2,0.14,0.14],[-0.2,0.14,-0.14]].forEach(p=>{ const lg=limb(p[0],p[1],p[2],0.1,0.035,0x2E7D32); l.add(lg); legs.push(lg); });
+      l.userData={legs,tail}; return l; }
+      
+    function makeDog(){ const d=new THREE.Group(); const bc=new THREE.Color().setHSL(0.08+Math.random()*0.1,0.55,0.55); const bm=new THREE.MeshStandardMaterial({color:bc,flatShading:true});
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.3,12,10),bm); b.scale.set(1,0.9,1.5); b.position.y=0.48; b.castShadow=true; d.add(b);
+      const hd=new THREE.Group(); hd.position.set(0,0.66,0.6); d.add(hd);
+      const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.24,12,10),bm); hd.add(hdm);
+      const sn=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8),M(0x8D6E63)); sn.scale.set(1,0.85,1.1); sn.position.set(0,-0.05,0.22); hd.add(sn);
+      const ns=new THREE.Mesh(new THREE.SphereGeometry(0.045,6,6),M(0x212121)); ns.position.set(0,-0.05,0.36); hd.add(ns);
+      hd.add(eye(-0.12,0.08,0.18,0.035),eye(0.12,0.08,0.18,0.035));
+      for(const s of[-1,1]){ const e=new THREE.Mesh(new THREE.ConeGeometry(0.09,0.2,5),bm); e.position.set(s*0.16,0.2,0.05); e.rotation.z=s*0.3; hd.add(e); }
+      const legs=[]; [[-0.18,0.4,0.42],[0.18,0.4,0.42],[-0.18,0.4,-0.42],[0.18,0.4,-0.42]].forEach(p=>{ const l=limb(p[0],p[1],p[2],0.3,0.08,bc); d.add(l); legs.push(l); });
+      const tail=new THREE.Mesh(new THREE.CapsuleGeometry(0.05,0.28,4,8),bm); tail.position.set(0,0.6,-0.62); tail.rotation.x=-1; d.add(tail);
+      d.userData={legs,tail,head:hd}; return d; }
+      
+    function makeDeer(){ 
+      const d=new THREE.Group(); const c=0xA9744F;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),M(c)); 
+      b.scale.set(1,0.85,1.4); b.position.y=0.7; b.castShadow=true; d.add(b);
+      const hd=new THREE.Group(); hd.position.set(0,1.0,0.55); d.add(hd);
+      const neck=new THREE.Mesh(new THREE.CapsuleGeometry(0.08,0.3,5,8),M(c)); 
+      neck.position.set(0,-0.1,-0.1); neck.rotation.x=-0.3; hd.add(neck);
+      const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),M(c)); 
+      hdm.scale.set(1,1,1.3); hdm.position.set(0,0.08,0.08); hd.add(hdm);
+      hd.add(eye(-0.07,0.1,0.18,0.025),eye(0.07,0.1,0.18,0.025));
+      for(const s of[-1,1]){ 
+        const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.025,0.35,5),M(0xC9B8A6)); 
+        trunk.position.set(s*0.07,0.22,0.03); trunk.rotation.z=s*0.2; hd.add(trunk);
+        for(let k=0;k<2;k++){ 
+          const br=new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.18,5),M(0xC9B8A6)); 
+          br.position.set(s*(0.1+k*0.06),0.28+k*0.03,0.03); br.rotation.z=s*0.7; hd.add(br); 
+        } 
+      }
+      const legs=[]; 
+      [[-0.12,0.52,0.35],[0.12,0.52,0.35],[-0.12,0.52,-0.35],[0.12,0.52,-0.35]].forEach(p=>{ 
+        const l=limb(p[0],p[1],p[2],0.35,0.09,c); d.add(l); legs.push(l); 
       });
-      for (let p = 0; p < 6; p++) {
-        const petal = new THREE.Mesh(new THREE.CircleGeometry(0.08, 6), petalMat);
-        const pa = (p / 6) * Math.PI * 2;
-        petal.position.set(Math.cos(pa) * 0.07, 0.36, Math.sin(pa) * 0.07);
-        petal.rotation.x = -Math.PI / 3;
-        petal.rotation.y = -pa;
-        flower.add(petal);
-      }
-      const core = new THREE.Mesh(
-        new THREE.SphereGeometry(0.05, 6, 6),
-        new THREE.MeshStandardMaterial({ color: 0xFDD835 })
-      );
-      core.position.y = 0.37;
-      flower.add(core);
-      const a = Math.random() * Math.PI * 2;
-      const d = 3 + Math.random() * 28;
-      const x = Math.cos(a) * d, z = Math.sin(a) * d;
-      flower.position.set(x, heightAt(x, z), z);
-      scene.add(flower);
+      d.userData={legs,head:hd}; return d; 
     }
-
-    // ===== ГРИБЫ =====
-    for (let i = 0; i < 25; i++) {
-      const mushroom = new THREE.Group();
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.1, 0.15, 0.5, 6),
-        new THREE.MeshStandardMaterial({ color: 0xFFF9C4, flatShading: true })
-      );
-      stem.position.y = 0.25;
-      mushroom.add(stem);
-      const cap = new THREE.Mesh(
-        new THREE.SphereGeometry(0.35, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2),
-        new THREE.MeshStandardMaterial({ color: Math.random() < 0.6 ? 0xE53935 : 0x8D6E63, flatShading: true })
-      );
-      cap.position.y = 0.48;
-      mushroom.add(cap);
-      for (let d = 0; d < 6; d++) {
-        const dot = new THREE.Mesh(
-          new THREE.SphereGeometry(0.05, 4, 4),
-          new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
-        );
-        const angle = Math.random() * Math.PI * 2;
-        const radius = 0.15 + Math.random() * 0.15;
-        dot.position.set(Math.cos(angle) * radius, 0.5 + Math.random() * 0.1, Math.sin(angle) * radius);
-        mushroom.add(dot);
+    
+    function makeCamel(){ 
+      const c=new THREE.Group(); const col=0xD4A76A;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.28,12,10),M(col)); 
+      b.scale.set(1,0.85,1.5); b.position.y=1.0; b.castShadow=true; c.add(b);
+      const h1=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8),M(col)); 
+      h1.position.set(0,1.35,0.35); c.add(h1);
+      const h2=new THREE.Mesh(new THREE.SphereGeometry(0.18,10,8),M(col)); 
+      h2.position.set(0,1.3,-0.35); c.add(h2);
+      const hd=new THREE.Group(); hd.position.set(0,1.6,0.85); c.add(hd);
+      const neck=new THREE.Mesh(new THREE.CapsuleGeometry(0.1,0.4,5,8),M(col)); 
+      neck.position.set(0,-0.15,-0.08); neck.rotation.x=-0.35; hd.add(neck);
+      const hdm=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),M(col)); 
+      hdm.scale.set(1,1,1.4); hdm.position.set(0,0.08,0.12); hd.add(hdm);
+      hd.add(eye(-0.07,0.1,0.22,0.025),eye(0.07,0.1,0.22,0.025));
+      for(const s of[-1,1]){ 
+        const e=new THREE.Mesh(new THREE.SphereGeometry(0.04,6,6),M(col)); 
+        e.position.set(s*0.09,0.14,0.03); hd.add(e); 
       }
-      const a = Math.random() * Math.PI * 2;
-      const d = 4 + Math.random() * 24;
-      const x = Math.cos(a) * d, z = Math.sin(a) * d;
-      mushroom.position.set(x, heightAt(x, z), z);
-      scene.add(mushroom);
-    }
-
-    // ===== ОБЛАКА =====
-    const clouds = [];
-    for (let c = 0; c < 15; c++) {
-      const cloud = new THREE.Group();
-      for (let p = 0; p < 8; p++) {
-        const puff = new THREE.Mesh(
-          new THREE.SphereGeometry(1.5 + Math.random() * 2, 8, 8),
-          new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true })
-        );
-        puff.position.set(p * 1.8 - 4, Math.random() * 0.8, Math.random() * 0.8);
-        cloud.add(puff);
-      }
-      cloud.position.set(-70 + Math.random() * 140, 15 + Math.random() * 10, -50 - Math.random() * 30);
-      scene.add(cloud);
-      clouds.push(cloud);
-    }
-
-    // ===== БАБОЧКИ: тело, усики, 4 крыла с узором, машут =====
-    const butterflies = [];
-    for (let i = 0; i < 22; i++) {
-      const b = new THREE.Group();
-      const hue = Math.random();
-      const wingCol = new THREE.Color().setHSL(hue, 0.9, 0.65);
-      const spotCol = new THREE.Color().setHSL((hue + 0.5) % 1, 0.9, 0.45);
-      const wingMat = new THREE.MeshStandardMaterial({ color: wingCol, side: THREE.DoubleSide, flatShading: true });
-      const spotMat = new THREE.MeshStandardMaterial({ color: spotCol, side: THREE.DoubleSide });
-
-      const body = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.035, 0.025, 0.35, 6),
-        new THREE.MeshStandardMaterial({ color: 0x212121 })
-      );
-      body.rotation.x = Math.PI / 2;
-      b.add(body);
-      // усики
-      for (const s of [-1, 1]) {
-        const ant = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.006, 0.006, 0.18, 3),
-          new THREE.MeshStandardMaterial({ color: 0x212121 })
-        );
-        ant.position.set(s * 0.04, 0.05, 0.22);
-        ant.rotation.x = -0.7;
-        ant.rotation.z = s * 0.4;
-        b.add(ant);
-      }
-      function makeWing(side) {
-        const w = new THREE.Group();
-        const upper = new THREE.Mesh(new THREE.CircleGeometry(0.24, 8), wingMat);
-        upper.rotation.x = -Math.PI / 2;
-        upper.scale.set(1, 0.75, 1);
-        upper.position.set(side * 0.15, 0, 0.07);
-        const lower = new THREE.Mesh(new THREE.CircleGeometry(0.16, 8), wingMat);
-        lower.rotation.x = -Math.PI / 2;
-        lower.scale.set(0.9, 0.8, 1);
-        lower.position.set(side * 0.11, 0, -0.12);
-        const spot = new THREE.Mesh(new THREE.CircleGeometry(0.06, 8), spotMat);
-        spot.rotation.x = -Math.PI / 2;
-        spot.position.set(side * 0.17, 0.002, 0.07);
-        w.add(upper, lower, spot);
-        return w;
-      }
-      const wl = makeWing(-1), wr = makeWing(1);
-      b.add(wl, wr);
-
-      b.userData = {
-        wl, wr,
-        phase: Math.random() * Math.PI * 2,
-        angle: Math.random() * Math.PI * 2,
-        radius: 4 + Math.random() * 16,
-        speed: 0.4 + Math.random() * 0.6,
-        height: 1.5 + Math.random() * 3
-      };
-      scene.add(b);
-      butterflies.push(b);
-    }
-
-    // ===== ПТИЦЫ =====
-    const birds = [];
-    for (let i = 0; i < 12; i++) {
-      const bird = new THREE.Group();
-      const body = new THREE.Mesh(
-        new THREE.ConeGeometry(0.25, 1, 4),
-        new THREE.MeshStandardMaterial({ color: 0x424242, flatShading: true })
-      );
-      body.rotation.z = Math.PI / 2;
-      bird.add(body);
-      const wing1 = new THREE.Mesh(
-        new THREE.ConeGeometry(0.15, 0.6, 3),
-        new THREE.MeshStandardMaterial({ color: 0x616161, flatShading: true })
-      );
-      wing1.position.y = 0.1; wing1.rotation.z = Math.PI / 4;
-      bird.add(wing1);
-      const wing2 = wing1.clone();
-      wing2.rotation.z = -Math.PI / 4;
-      bird.add(wing2);
-      bird.userData = {
-        angle: Math.random() * Math.PI * 2,
-        radius: 60 + Math.random() * 30,
-        speed: 0.2 + Math.random() * 0.3,
-        height: 20 + Math.random() * 10
-      };
-      scene.add(bird);
-      birds.push(bird);
-    }
-
-    // ===== ЗАЙЦЫ: глаза, нос, анимированные лапы =====
-    const rabbits = [];
-    for (let i = 0; i < 8; i++) {
-      const rabbit = new THREE.Group();
-      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xD7CCC8, flatShading: true });
-      const earMat = new THREE.MeshStandardMaterial({ color: 0xBCAAA4, flatShading: true });
-
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 6), bodyMat);
-      body.scale.set(1, 0.9, 1.4); body.position.y = 0.4;
-      rabbit.add(body);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), bodyMat);
-      head.position.set(0, 0.62, 0.48);
-      rabbit.add(head);
-      // глаза + нос
-      for (const s of [-1, 1]) {
-        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.04, 5, 5),
-          new THREE.MeshStandardMaterial({ color: 0x212121 }));
-        eye.position.set(s * 0.13, 0.7, 0.7);
-        rabbit.add(eye);
-      }
-      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.045, 5, 5),
-        new THREE.MeshStandardMaterial({ color: 0xEF9A9A }));
-      nose.position.set(0, 0.6, 0.75);
-      rabbit.add(nose);
-      const ear1 = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.4, 4), earMat);
-      ear1.position.set(-0.1, 0.9, 0.45); ear1.rotation.x = -0.2;
-      rabbit.add(ear1);
-      const ear2 = ear1.clone(); ear2.position.x = 0.1;
-      rabbit.add(ear2);
-      // лапы (анимируются)
-      const legs = [];
-      const legPositions = [[-0.2, 0.15, 0.3], [0.2, 0.15, 0.3], [-0.2, 0.15, -0.3], [0.2, 0.15, -0.3]];
-      legPositions.forEach(pos => {
-        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.3, 4), earMat);
-        leg.position.set(...pos);
-        rabbit.add(leg);
-        legs.push(leg);
+      const legs=[]; 
+      [[-0.18,0.8,0.45],[0.18,0.8,0.45],[-0.18,0.8,-0.45],[0.18,0.8,-0.45]].forEach(p=>{ 
+        const l=limb(p[0],p[1],p[2],0.6,0.08,col); c.add(l); legs.push(l); 
       });
-      const tail = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6),
-        new THREE.MeshStandardMaterial({ color: 0xFFFFFF, flatShading: true }));
-      tail.position.set(0, 0.35, -0.52);
-      rabbit.add(tail);
-
-      const a = Math.random() * Math.PI * 2;
-      const d = 8 + Math.random() * 20;
-      rabbit.position.set(Math.cos(a) * d, heightAt(Math.cos(a) * d, Math.sin(a) * d), Math.sin(a) * d);
-      rabbit.userData = { speed: 0.8 + Math.random() * 0.7, legs, phase: Math.random() * 6,
-        tx: rabbit.position.x, tz: rabbit.position.z, rest: Math.random() * 3, minD: 5, maxD: 28 };
-      scene.add(rabbit);
-      rabbits.push(rabbit);
+      c.userData={legs,head:hd}; return c; 
     }
 
-    // ===== СОБАКИ: глаза, виляющий хвост, лапы =====
-    const dogs = [];
-    for (let i = 0; i < 5; i++) {
-      const dog = new THREE.Group();
-      const bodyColor = new THREE.Color().setHSL(0.08 + Math.random() * 0.1, 0.7, 0.5);
-      const bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, flatShading: true });
+    function makeSeal(){ const s=new THREE.Group(); const c=0x9FB0BC;
+      const b=new THREE.Mesh(new THREE.SphereGeometry(0.42,12,10),M(c)); b.scale.set(1.6,0.8,0.9); b.position.y=0.4; b.castShadow=true; s.add(b);
+      const hd=new THREE.Mesh(new THREE.SphereGeometry(0.24,12,10),M(c)); hd.position.set(0.62,0.5,0); s.add(hd);
+      s.add(eye(0.78,0.6,0.1,0.04),eye(0.78,0.6,-0.1,0.04));
+      const ns=new THREE.Mesh(new THREE.SphereGeometry(0.04,6,6),M(0x37474F)); ns.position.set(0.88,0.48,0); s.add(ns);
+      const legs=[]; for(const z of[1,-1]){ const fl=new THREE.Mesh(new THREE.ConeGeometry(0.13,0.28,5),M(c)); fl.position.set(0.2,0.12,z*0.32); fl.rotation.x=z*0.6; s.add(fl); legs.push(fl); const bl=new THREE.Mesh(new THREE.ConeGeometry(0.13,0.28,5),M(c)); bl.position.set(-0.2,0.12,z*0.32); bl.rotation.x=z*0.6; s.add(bl); legs.push(bl); }
+      const tail=new THREE.Mesh(new THREE.ConeGeometry(0.18,0.4,5),M(c)); tail.position.set(-0.82,0.35,0); tail.rotation.z=1.57; s.add(tail);
+      s.userData={legs}; return s; }
 
-      const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 1.3), bodyMat);
-      body.position.y = 0.55;
-      dog.add(body);
-      const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.6), bodyMat);
-      head.position.set(0, 0.75, 0.7);
-      dog.add(head);
-      const snout = new THREE.Mesh(
-        new THREE.BoxGeometry(0.3, 0.25, 0.3),
-        new THREE.MeshStandardMaterial({ color: 0x8D6E63, flatShading: true })
-      );
-      snout.position.set(0, 0.65, 1.0);
-      dog.add(snout);
-      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.08, 4, 4),
-        new THREE.MeshStandardMaterial({ color: 0x212121 }));
-      nose.position.set(0, 0.7, 1.15);
-      dog.add(nose);
-      for (const s of [-1, 1]) {
-        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 5, 5),
-          new THREE.MeshStandardMaterial({ color: 0x212121 }));
-        eye.position.set(s * 0.15, 0.85, 0.98);
-        dog.add(eye);
+    function buildRock() { const rg = new THREE.Group(); const geo = new THREE.SphereGeometry(0.8, 24, 16); const pos = geo.attributes.position; const v = new THREE.Vector3(); for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); const n = Math.sin(v.x * 3.1 + v.y * 2.7) * Math.sin(v.y * 3.7 + v.z * 4.1) * Math.sin(v.z * 2.9 + v.x * 3.3); v.multiplyScalar(1 + n * 0.15); pos.setXYZ(i, v.x, v.y, v.z); } geo.computeVertexNormals(); const rock = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x9E9E9E, roughness: 0.8, flatShading: true })); rock.scale.set(1, .8, .9); rock.castShadow = true; rg.add(rock); rg.position.y = 0.35; world.add(rg); for (let i = 0; i < 25; i++) { const s = 0.2 + Math.random() * 0.35; const pe = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), M(new THREE.Color().setHSL(0, 0, 0.35 + Math.random() * 0.2))); const a = Math.random() * 6.28, d = 3 + Math.random() * 20; pe.position.set(Math.cos(a) * d, heightAt(Math.cos(a) * d, Math.sin(a) * d) + s / 2, Math.sin(a) * d); pe.castShadow = true; world.add(pe); } }
+
+    function applySkyFog() {
+      const b = BIOMES[biome];
+      try {
+        const sc = document.createElement('canvas');
+        sc.width = 4; sc.height = 512;
+        const c = sc.getContext('2d');
+        const g = c.createLinearGradient(0, 0, 0, 512);
+        g.addColorStop(0, b.sky[0]); g.addColorStop(0.5, b.sky[1]); g.addColorStop(1, b.sky[2]);
+        c.fillStyle = g; c.fillRect(0, 0, 4, 512);
+        if (scene.background) scene.background.dispose();
+        scene.background = new THREE.CanvasTexture(sc);
+      } catch (e) {
+        scene.background = new THREE.Color(b.fog); // Fallback на случай сбоя
       }
-      const earMat = new THREE.MeshStandardMaterial({ color: bodyColor.clone().multiplyScalar(0.8), flatShading: true });
-      const ear1 = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.25, 4), earMat);
-      ear1.position.set(-0.2, 1.0, 0.7); ear1.rotation.z = 0.3;
-      dog.add(ear1);
-      const ear2 = ear1.clone(); ear2.position.x = 0.2; ear2.rotation.z = -0.3;
-      dog.add(ear2);
-      const legs = [];
-      [[-0.25, 0.28, 0.4], [0.25, 0.28, 0.4], [-0.25, 0.28, -0.4], [0.25, 0.28, -0.4]].forEach(pos => {
-        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.55, 4),
-          new THREE.MeshStandardMaterial({ color: bodyColor.clone().multiplyScalar(0.9), flatShading: true }));
-        leg.position.set(...pos);
-        dog.add(leg);
-        legs.push(leg);
-      });
-      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 4), bodyMat);
-      tail.position.set(0, 0.75, -0.7);
-      tail.rotation.x = -Math.PI / 3;
-      dog.add(tail);
-
-      const a = Math.random() * Math.PI * 2;
-      const d = 12 + Math.random() * 15;
-      dog.position.set(Math.cos(a) * d, heightAt(Math.cos(a) * d, Math.sin(a) * d), Math.sin(a) * d);
-      dog.userData = { speed: 1.3 + Math.random() * 0.8, legs, tail, phase: Math.random() * 6,
-        tx: dog.position.x, tz: dog.position.z, rest: Math.random() * 3, minD: 8, maxD: 26 };
-      scene.add(dog);
-      dogs.push(dog);
+      if (scene.fog) scene.fog.color.setHex(b.fog);
+      else scene.fog = new THREE.Fog(b.fog, 40, b.fogFar);
+      scene.fog.far = b.fogFar;
+      sunLight.color.setHex(b.sun);
+      sunLight.intensity = b.sunI;
+      ambient.intensity = b.amb;
     }
 
-    // ===== ГЛАВНЫЙ КАМЕНЬ =====
-    const rockGroup = new THREE.Group();
-    const geo = new THREE.SphereGeometry(0.8, 24, 16);
-    {
-      const pos = geo.attributes.position;
-      const v = new THREE.Vector3();
-      for (let i = 0; i < pos.count; i++) {
-        v.fromBufferAttribute(pos, i);
-        const n = Math.sin(v.x * 3.1 + v.y * 2.7) * Math.sin(v.y * 3.7 + v.z * 4.1) * Math.sin(v.z * 2.9 + v.x * 3.3);
-        v.multiplyScalar(1 + n * 0.15);
-        pos.setXYZ(i, v.x, v.y, v.z);
-      }
-      geo.computeVertexNormals();
-    }
-    const rock = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-      color: 0x9E9E9E, roughness: 0.8, flatShading: true
-    }));
-    rock.scale.set(1.0, 0.8, 0.9);
-    rock.castShadow = true;
-    rockGroup.add(rock);
-    rockGroup.position.y = 0.35;
-    scene.add(rockGroup);
+    function buildWorld() { clearWorld(); applySkyFog(); buildGround(); buildWater(); buildMountains(); buildFlora(); buildRock(); }
 
-    // Маленькие камни вокруг
-    for (let i = 0; i < 25; i++) {
-      const s = 0.2 + Math.random() * 0.35;
-      const pebble = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(s, 0),
-        new THREE.MeshStandardMaterial({
-          color: new THREE.Color().setHSL(0, 0, 0.35 + Math.random() * 0.2),
-          flatShading: true
-        })
-      );
-      const a = Math.random() * Math.PI * 2, d = 3 + Math.random() * 20;
-      const x = Math.cos(a) * d, z = Math.sin(a) * d;
-      pebble.position.set(x, heightAt(x, z) + s / 2, z);
-      pebble.rotation.set(Math.random(), Math.random(), Math.random());
-      pebble.castShadow = true;
-      scene.add(pebble);
-    }
+    biomeBar.addEventListener('click', e => { const b = e.target.dataset.b; if (!b) return; biome = b; document.querySelectorAll('#biomeBar button').forEach(x => x.classList.toggle('active', x.dataset.b === b)); buildWorld(); });
 
-    // ===== КАМЕРА: ограниченный обзор + автоповорот в простое =====
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.set(0, 0.3, 0);
-    controls.minDistance = 3;              // не подлетать вплотную
-    controls.maxDistance = 22;             // не отлетать за поляну
-    controls.maxPolarAngle = Math.PI / 2.15; // не заглядывать под землю
-    controls.enablePan = false;            // камень всегда в центре
+    controls.target.set(0, 0.5, 0);
+    controls.minDistance = 3;
+    controls.maxDistance = 30;
+    controls.maxPolarAngle = Math.PI / 2.15;
+    controls.enablePan = false;
     controls.autoRotateSpeed = 1.2;
+    controls.update(); // Применяем лимиты до первого рендера
+    
+    let lastInteract = performance.now(); const markActive = () => lastInteract = performance.now(); ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, markActive));
 
-    let lastInteract = performance.now();
-    function markActive() { lastInteract = performance.now(); }
-    ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(ev =>
-      window.addEventListener(ev, markActive));
+    function smoothRot(u, target, dt) { let diff = target - u.rot; while (diff > Math.PI) diff -= 6.283; while (diff < -Math.PI) diff += 6.283; u.rot += diff * Math.min(1, dt * 6); return u.rot; }
+    function wander(obj, u, dt) {
+      if (u.rest > 0) { u.rest -= dt; return false; }
+      const dx = u.tx - obj.position.x, dz = u.tz - obj.position.z, dist = Math.hypot(dx, dz);
+      if (dist < 0.5) { const a = Math.random() * 6.28, d = u.minD + Math.random() * (u.maxD - u.minD); u.tx = Math.cos(a) * d; u.tz = Math.sin(a) * d; if (Math.random() < 0.4) u.rest = 1 + Math.random() * 3; return false; }
+      const vx = dx / dist * u.speed * dt, vz = dz / dist * u.speed * dt;
+      obj.position.x += vx; obj.position.z += vz;
+      obj.rotation.y = smoothRot(u, Math.atan2(vx, vz), dt);
+      return true;
+    }
 
-      // Блуждание: идёт к точке, дошёл — выбирает новую, иногда отдыхает
-function wander(obj, u, dt) {
-  if (u.rest > 0) { u.rest -= dt; return false; }
-  const dx = u.tx - obj.position.x, dz = u.tz - obj.position.z;
-  const dist = Math.hypot(dx, dz);
-  if (dist < 0.5) {
-    const a = Math.random() * Math.PI * 2;
-    const d = u.minD + Math.random() * (u.maxD - u.minD);
-    u.tx = Math.cos(a) * d; u.tz = Math.sin(a) * d;
-    if (Math.random() < 0.4) u.rest = 1 + Math.random() * 3;
-    return false;
-  }
-  const vx = dx / dist * u.speed * dt, vz = dz / dist * u.speed * dt;
-  obj.position.x += vx; obj.position.z += vz;
-  obj.rotation.y = Math.atan2(vx, vz);   // смотрит КУДА идёт
-  return true;
-}
-    // ===== АНИМАЦИЯ =====
-    let t = 0;
+    buildWorld();
+
+    let t = 0; const dayLen = 90;
+    const legPhase = [0, Math.PI, Math.PI, 0];
     (function animate() {
       requestAnimationFrame(animate);
-      t += 0.016;
+      const dt = 0.016; t += dt;
+      const dayT = (t % dayLen) / dayLen;
+      const sunAng = dayT * 6.283 + 1.57;
+      const sunY = Math.sin(sunAng); const isNight = sunY < -0.05;
+      sunLight.position.set(Math.cos(sunAng) * 30, Math.max(2, sunY * 30), 15);
+      sunBall.position.set(Math.cos(sunAng) * 120, sunY * 120, -60);
+      sunBall.visible = !isNight; moonBall.visible = isNight; stars.visible = isNight;
+      moonBall.position.set(-Math.cos(sunAng) * 120, -sunY * 120, -60);
+      const nightFactor = Math.max(0, Math.min(1, (-sunY - 0.05) * 2));
+      ambient.intensity = BIOMES[biome].amb * (1 - nightFactor * 0.4);
+      sunLight.intensity = BIOMES[biome].sunI * (1 - nightFactor * 0.6);
+      clock.textContent = isNight ? '🌙 Ночь' : (sunY < 0.3 ? '🌅 Закат/рассвет' : '☀️ День');
+      fireflies.forEach(f => { const on = isNight; f.visible = on; if (on) { f.position.y = f.userData.base.y + Math.sin(t * 2 + f.userData.ph) * 0.5; f.material.opacity = 0.5 + 0.5 * Math.sin(t * 4 + f.userData.ph); } });
 
       const idle = performance.now() - lastInteract > 3000;
       controls.autoRotate = idle;
       idleHint.style.display = (idle && loginForm.style.display === 'none') ? 'block' : 'none';
 
-      // Облака плывут
-      clouds.forEach(c => {
-        c.position.x += 0.015;
-        if (c.position.x > 80) c.position.x = -80;
+      clouds.forEach(c => { c.position.x += c.userData.speed; if (c.position.x > 100) c.position.x = -100; });
+      trees.forEach(tr => { tr.rotation.z = Math.sin(t * 1.2 + tr.userData.phase) * 0.02; });
+      if (waterMesh) { const wp = waterMesh.geometry.attributes.position; for (let i = 0; i < wp.count; i++) { const x = wp.getX(i), z = wp.getZ(i); wp.setY(i, Math.sin(x * 0.3 + t * 2) * 0.12 + Math.cos(z * 0.2 + t * 1.5) * 0.1); } wp.needsUpdate = true; }
+      if (particleSystem) { const pp = particleSystem.geometry.attributes.position; const sp = BIOMES[biome].particles === 'snow' ? -2 : -0.5; for (let i = 0; i < pp.count; i++) { let y = pp.getY(i) + sp * dt; if (y < 0) y = 60; pp.setY(i, y); if (BIOMES[biome].particles === 'dust') pp.setX(i, pp.getX(i) + 2 * dt); } pp.needsUpdate = true; }
+
+      const bflies = world.children.filter(c => c.userData && c.userData.wl);
+      bflies.forEach(b => { const u = b.userData; u.angle += 0.02 * u.speed; b.position.x = Math.cos(u.angle) * u.radius; b.position.z = Math.sin(u.angle) * u.radius; b.position.y = u.height + Math.sin(t * 3 + u.phase) * 0.5; b.rotation.y = smoothRot(u, Math.atan2(-Math.sin(u.angle), Math.cos(u.angle)), dt); const flap = 0.5 + Math.abs(Math.sin(t * 10 + u.phase)) * 0.9; u.wl.rotation.y = -flap; u.wr.rotation.y = flap; });
+
+      smallA.forEach(r => {
+        const u = r.userData; const moving = wander(r, u, dt);
+        const gY = heightAt(r.position.x, r.position.z);
+        const freq = u.speed * 6;
+        const bob = moving ? Math.abs(Math.sin(t * freq + u.phase)) * 0.18 : 0;
+        r.position.y = gY + bob;
+        const swing = moving ? Math.sin(t * freq + u.phase) : 0;
+        u.legs.forEach((l, i) => { l.rotation.x = swing * Math.cos(legPhase[i % 4]) * 0.6; });
       });
-
-      // Деревья покачиваются
-      trees.forEach(tr => {
-        tr.rotation.z = Math.sin(t * 1.2 + tr.userData.phase) * 0.015;
+      bigA.forEach(d => {
+        const u = d.userData; const moving = wander(d, u, dt);
+        const gY = heightAt(d.position.x, d.position.z);
+        const freq = u.speed * 5;
+        const bob = moving ? Math.abs(Math.sin(t * freq + u.phase)) * 0.12 : 0;
+        d.position.y = gY + bob;
+        const swing = moving ? Math.sin(t * freq + u.phase) : 0;
+        u.legs.forEach((l, i) => { l.rotation.x = swing * Math.cos(legPhase[i % 4]) * 0.55; });
+        if (u.tail) u.tail.rotation.y = Math.sin(t * 8 + u.phase) * (moving ? 0.5 : 0.2);
+        if (u.head) u.head.rotation.x = Math.sin(t * freq + u.phase + 1) * (moving ? 0.08 : 0.03);
       });
-
-            // ===== Бабочки =====
-        butterflies.forEach(b => {
-        const u = b.userData;
-        u.angle += 0.02 * u.speed;
-        b.position.x = Math.cos(u.angle) * u.radius;
-        b.position.z = Math.sin(u.angle) * u.radius;
-        b.position.y = u.height + Math.sin(t * 3 + u.phase) * 0.5;
-        b.rotation.y = Math.atan2(-Math.sin(u.angle), Math.cos(u.angle));   // ← только эта строка
-        const flap = 0.5 + Math.abs(Math.sin(t * 10 + u.phase)) * 0.9;
-        u.wl.rotation.z = -flap;
-        u.wr.rotation.z = flap;
-        });
-
-      // Птицы
-      birds.forEach(b => {
-        b.userData.angle += 0.01 * b.userData.speed;
-        b.position.x = Math.cos(b.userData.angle) * b.userData.radius;
-        b.position.z = Math.sin(b.userData.angle) * b.userData.radius;
-        b.position.y = b.userData.height;
-        b.rotation.y = b.userData.angle + Math.PI / 2;
-      });
-
-      // Зайцы: скачут к случайным точкам
-            rabbits.forEach(r => {
-            const u = r.userData;
-            const moving = wander(r, u, 0.016);
-            r.position.y = heightAt(r.position.x, r.position.z)
-                + (moving ? Math.abs(Math.sin(t * 6 + u.phase)) * 0.25 : 0);
-            const hop = moving ? Math.sin(t * 8 + u.phase) : 0;
-            u.legs[0].rotation.x = hop * 0.4;
-            u.legs[1].rotation.x = -hop * 0.4;
-            u.legs[2].rotation.x = -hop * 0.4;
-            u.legs[3].rotation.x = hop * 0.4;
-            });;
-
-            // Собаки: бегают и виляют хвостом
-        dogs.forEach(d => {
-        const u = d.userData;
-        const moving = wander(d, u, 0.016);
-        d.position.y = heightAt(d.position.x, d.position.z);
-        const run = moving ? Math.sin(t * 10 + u.phase) : 0;
-        u.legs[0].rotation.x = run * 0.5;
-        u.legs[1].rotation.x = -run * 0.5;
-        u.legs[2].rotation.x = -run * 0.5;
-        u.legs[3].rotation.x = run * 0.5;
-        u.tail.rotation.y = Math.sin(t * 8 + u.phase) * (moving ? 0.6 : 0.2);
-        });
 
       controls.update();
       renderer.render(scene, camera);
     })();
 
-    addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
+    addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
   </script>
 </body>
 </html>
